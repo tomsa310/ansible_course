@@ -2,7 +2,7 @@
 - hosts: all
   become: true
 #  tasks:
-  pre_tasks: 
+  pre_tasks:
 
   - name: install updates for fedora
     tags: always
@@ -18,13 +18,34 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
+  - name: create user
+    tags: always
+    ansible.builtin.user:
+      name: simone
+      groups: root
+
+  - name: add sudoers file for simone
+    tags: always
+    ansible.builtin.copy:
+      src: sudoer_simone
+      dest: /etc/sudoers.d/simone
+      owner: root
+      group: root
+      mode: 0440
+
+  - name: add ssh key for simone user
+    tags: always
+    ansible.builtin.authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPkJE5njpQysVUpeuCiNlRp3Sm0j7bjYZPcK0zqgXegV ansible@ubuntu-ws"
+
 - hosts: web_servers
   become: true
   tasks:
 
     - name: install apache on web servers (ubuntu)
       tags: apache,ubuntu
-      ansible.builtin.apt: 
+      ansible.builtin.apt:
         name:
           - apache2
           - libapache2-mod-php
